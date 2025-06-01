@@ -8,7 +8,11 @@
 <div align="center">
 	<h1>Engineers -learning Platform</h1>
 	
-	<button>Login</button>
+	<h3 style="color:green" th:text="${session.pass}"></h3>Add commentMore actions
+	<h3 style="color:red" th:text="${session.fail}"></h3>
+	<span th:text="${@generalService.removeMessage()}"></span>
+	
+	<a href="/login"> <button>Login</button></a>
 	<a href="/register"><button>Register</button></a>
 </div>
 </body>

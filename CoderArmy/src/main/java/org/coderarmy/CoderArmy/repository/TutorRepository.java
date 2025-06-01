@@ -9,4 +9,8 @@ public interface TutorRepository extends JpaRepository<Tutor,Long >{
 
 	boolean existsByEmail(String email);
 
+	Tutor findByEmail(String email);
+
+
+
 }
