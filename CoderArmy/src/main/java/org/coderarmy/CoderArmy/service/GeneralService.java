@@ -1,13 +1,14 @@
 package org.coderarmy.CoderArmy.service;
 
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 import org.coderarmy.CoderArmy.dto.AccountType;
 import org.coderarmy.CoderArmy.dto.UserDto;
 import org.coderarmy.CoderArmy.model.Learner;
 import org.coderarmy.CoderArmy.model.Tutor;
-import org.coderarmy.CoderArmy.repository.LearnerRepository;
-import org.coderarmy.CoderArmy.repository.TutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -26,41 +27,34 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-
-
-
 @Service
 public class GeneralService {
-
-	
-	
 	@Autowired
-	LearnerRepository learnerRepository;
+	org.coderarmy.CoderArmy.repository.LearnerRepository learnerRepository;
 
 	@Autowired
-	PasswordEncoder encoder;  //for password encoding bcz both Tuter & Ler will make same pssword the after encoder we will match bcz bot bcm digg
+	PasswordEncoder encoder;
 
 	@Autowired
-	TutorRepository tutorRepository;
+	org.coderarmy.CoderArmy.repository.TutorRepository tutorRepository;
 
 	@Autowired
 	JavaMailSender mailSender;
 
 	@Autowired
-	TemplateEngine templateEngine;    //
+	TemplateEngine templateEngine;
 
-	@Value("${spring.mail.username}")  //direct taking value from properties
+	@Value("${OTP_TIME}")
+	long otpTime;
+
+	@Value("${spring.mail.username}")
 	private String email;
-	
-	
-	
+
 	public String loadRegister(UserDto userDto, Model model) {
 		model.addAttribute("userDto", userDto);
 		return "register.html";
 	}
-	
-	
-	
+
 	public String register(UserDto userDto, BindingResult result, HttpSession session) {
 		if (!userDto.getConfirmPassword().equals(userDto.getPassword()))
 			result.rejectValue("confirmPassword", "error.confirmPassword",
@@ -75,23 +69,25 @@ public class GeneralService {
 
 		if (!result.hasErrors()) {
 			int otp = new Random().nextInt(100000, 1000000);
-			session.setMaxInactiveInterval(60);//1 mit interval
 			session.setAttribute("otp", otp);
 			session.setAttribute("userDto", userDto);
 			sendEmail(otp, userDto);
-			session.setAttribute("pass", "Otp sent Success");
-			
+			session.setAttribute("time", LocalDateTime.now());
+			session.setAttribute("pass", "Otp Sent Success");
 			return "redirect:/otp";
 		}
 		return "register.html";
 	}
-	
-	
-	
+
 	public String confirmOtp(int otp, HttpSession session) {
-		try {
+		LocalDateTime createdTime = (LocalDateTime) session.getAttribute("time");
+		LocalDateTime curretTime = LocalDateTime.now();
+
+		long seconds = Duration.between(createdTime, curretTime).getSeconds();
+		if (seconds <= otpTime) {
 			int sessionOtp = (int) session.getAttribute("otp");
 			UserDto userDto = (UserDto) session.getAttribute("userDto");
+
 			if (sessionOtp == otp) {
 				if (userDto.getType() == AccountType.TUTOR) {
 					Tutor tutor = new Tutor();
@@ -116,18 +112,12 @@ public class GeneralService {
 				session.setAttribute("fail", "Invalid Otp Try Again");
 				return "redirect:/otp";
 			}
-		} catch (NullPointerException e) {
-			session.setAttribute("fail", "Otp Expired, Try Again");
-			return "redirect:/register";
+		} else {
+			session.setAttribute("fail", "Otp Expired at Try Resending OTP ");
+			return "redirect:/otp";
 		}
 	}
-		
-		
-	
-	
-	
-	
-	
+
 	void sendEmail(int otp, UserDto userDto) {
 
 		MimeMessage message = mailSender.createMimeMessage();
@@ -152,9 +142,7 @@ public class GeneralService {
 		}
 
 	}
-	
-	
-	
+
 	public void removeMessage() {
 		RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
 		ServletRequestAttributes attributes = (ServletRequestAttributes) requestAttributes;
