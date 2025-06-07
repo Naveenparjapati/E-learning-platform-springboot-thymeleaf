@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+</head>
+<body>
+
+	<h3 style="color: green" th:text="${session.pass}"></h3>
+	<h3 style="color: red" th:text="${session.fail}"></h3>
+	<span th:text="${@generalService.removeMessage()}"></span>
+
+
+	<div align="center">
+	<h1>Add Course</h1>
+		<form action="/tutor/add-course" method="post"
+			th:object="${courseDto}">
+			Title: <input type="text" th:field="*{title}"> <span
+				th:errors="*{title}"></span> <br> <br> Description:
+			<textarea rows="5" cols="30" th:field="*{description}"></textarea>
+			<span th:errors="*{description}"></span> <br> <br> Type : <input
+				type="radio" th:field="*{paid}" value="true">Paid <input
+				type="radio" th:field="*{paid}" value="false">Free <br>
+			<br>
+			<button>Add</button>
+		</form>
+		
+		<br>
+		<a href="/tutor/courses"> <button>Back</button> </a>
+	</div>
+</body>
+</html>
