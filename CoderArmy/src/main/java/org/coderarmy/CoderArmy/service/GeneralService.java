@@ -9,6 +9,8 @@ import org.coderarmy.CoderArmy.dto.AccountType;
 import org.coderarmy.CoderArmy.dto.UserDto;
 import org.coderarmy.CoderArmy.model.Learner;
 import org.coderarmy.CoderArmy.model.Tutor;
+import org.coderarmy.CoderArmy.repository.LearnerRepository;
+import org.coderarmy.CoderArmy.repository.TutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -30,13 +32,13 @@ import jakarta.servlet.http.HttpSession;
 @Service
 public class GeneralService {
 	@Autowired
-	org.coderarmy.CoderArmy.repository.LearnerRepository learnerRepository;
+	LearnerRepository learnerRepository;
 
 	@Autowired
 	PasswordEncoder encoder;
 
 	@Autowired
-	org.coderarmy.CoderArmy.repository.TutorRepository tutorRepository;
+	TutorRepository tutorRepository;
 
 	@Autowired
 	JavaMailSender mailSender;
